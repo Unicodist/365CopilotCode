@@ -16,7 +16,9 @@
     "AI",
     "Programming Languages"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -24,8 +26,37 @@
         "command": "365CopilotCode.helloWorld",
         "title": "Hello World",
         "category": "365 Copilot Code"
+      },
+      {
+        "command": "365CopilotCode.signIn",
+        "title": "Sign In to Microsoft 365 Copilot",
+        "category": "365 Copilot Code",
+        "icon": "$(sign-in)"
+      },
+      {
+        "command": "365CopilotCode.signOut",
+        "title": "Sign Out of Microsoft 365 Copilot",
+        "category": "365 Copilot Code",
+        "icon": "$(sign-out)"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "365 Copilot Code",
+      "properties": {
+        "365CopilotCode.auth.clientId": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Application (client) ID of your own Microsoft Entra app registration. Leave empty to use VS Code's built-in Microsoft sign-in. Your tenant may require its own app registration with admin consent for the Microsoft 365 Copilot Chat API permissions.",
+          "scope": "application"
+        },
+        "365CopilotCode.auth.tenantId": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Microsoft Entra tenant ID or domain (for example `contoso.onmicrosoft.com`) to sign in to. Leave empty to sign in with any work or school account.",
+          "scope": "application"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
