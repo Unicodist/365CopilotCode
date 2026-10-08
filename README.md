@@ -40,7 +40,13 @@ On Linux without a display, run tests with `xvfb-run -a npm test`.
 
 ## Installing a build
 
-Every CI run uploads the packaged extension as the `365-copilot-code-vsix` artifact. Download it from the run's summary page on the Actions tab, unzip it, then install the `.vsix` with **Extensions: Install from VSIX...** in VS Code or `code --install-extension <file>.vsix`.
+The easiest way to get the extension is the `.vsix` attached to the latest [GitHub release](https://github.com/Unicodist/365CopilotCode/releases/latest). Install it with **Extensions: Install from VSIX...** in VS Code or `code --install-extension <file>.vsix`.
+
+To get a build of a branch or pull request instead, use its CI run. Every CI run uploads the packaged extension as the `365-copilot-code-vsix` artifact. Download it from the run's summary page on the Actions tab, unzip it, then install the `.vsix` with **Extensions: Install from VSIX...** in VS Code or `code --install-extension <file>.vsix`.
+
+## Releasing
+
+Bump `version` in `package.json` (for example with `npm version patch`), push the commit, then push a matching tag such as `v0.0.2`. The Release workflow checks that the tag matches the version, runs the tests, packages the extension and creates a GitHub release with the `.vsix` attached. Tags with a suffix, such as `v0.1.0-beta.1`, are published as pre-releases.
 
 ## Project layout
 
