@@ -9,7 +9,7 @@ suite("Extension", () => {
     await extension.activate();
 
     const commands = await vscode.commands.getCommands(true);
-    for (const id of ["365CopilotCode.helloWorld", "365CopilotCode.signIn", "365CopilotCode.signOut"]) {
+    for (const id of ["365CopilotCode.helloWorld", "365CopilotCode.signIn", "365CopilotCode.signOut", "365CopilotCode.ask"]) {
       assert.ok(commands.includes(id), `missing command ${id}`);
     }
   });

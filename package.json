@@ -38,6 +38,12 @@
         "title": "Sign Out of Microsoft 365 Copilot",
         "category": "365 Copilot Code",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "365CopilotCode.ask",
+        "title": "Ask Microsoft 365 Copilot...",
+        "category": "365 Copilot Code",
+        "icon": "$(copilot)"
       }
     ],
     "configuration": {
@@ -54,9 +60,51 @@
           "default": "",
           "markdownDescription": "Microsoft Entra tenant ID or domain (for example `contoso.onmicrosoft.com`) to sign in to. Leave empty to sign in with any work or school account.",
           "scope": "application"
+        },
+        "365CopilotCode.context.maxCharacters": {
+          "type": "number",
+          "default": 40000,
+          "minimum": 1000,
+          "markdownDescription": "Most characters of file content sent to Microsoft 365 Copilot with one question. Files are added in priority order (selection, attached files, active file, open tabs, related workspace files) and the last one that fits is cut short."
+        },
+        "365CopilotCode.context.includeWorkspaceFiles": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Also send other open tabs and workspace files related to the question (files the active file imports, or whose names match words in the question). When off, only the active file, selection and attached files are sent."
+        },
+        "365CopilotCode.context.maxWorkspaceFiles": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "markdownDescription": "Most open tabs and related workspace files sent with one question, on top of the active file."
+        },
+        "365CopilotCode.context.exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Glob patterns for files never sent as context, on top of `files.exclude`, `.gitignore`, and files that commonly hold secrets such as `.env` and private keys."
         }
       }
-    }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "365CopilotCode.ask",
+          "group": "365CopilotCode@1"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "365CopilotCode.m365",
+        "name": "m365",
+        "fullName": "Microsoft 365 Copilot",
+        "description": "Ask Microsoft 365 Copilot about your code",
+        "isSticky": true
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -78,5 +126,8 @@
     "eslint": "^9.39.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0"
+  },
+  "dependencies": {
+    "ignore": "7.0.5"
   }
 }

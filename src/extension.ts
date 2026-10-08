@@ -1,11 +1,14 @@
 import * as vscode from "vscode";
 import { AuthManager } from "./auth";
+import { registerAskCommand, registerChatParticipant } from "./chat";
+import { CopilotClient } from "./copilot";
 import { AuthStatusBar } from "./statusBar";
 
 /** API returned from `activate`, for other parts of the extension and for tests. */
 export interface ExtensionApi {
   auth: AuthManager;
   statusBar: AuthStatusBar;
+  copilot: CopilotClient;
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<ExtensionApi> {
@@ -41,10 +44,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
     }
   });
 
-  context.subscriptions.push(auth, statusBar, helloWorld, signIn, signOut);
+  const copilot = new CopilotClient(() => auth.getAccessToken());
+  const askCommand = registerAskCommand(copilot);
+  const participant = registerChatParticipant(copilot);
+
+  context.subscriptions.push(auth, statusBar, helloWorld, signIn, signOut, askCommand);
+  if (participant) {
+    context.subscriptions.push(participant);
+  }
 
   await auth.refresh();
-  return { auth, statusBar };
+  return { auth, statusBar, copilot };
 }
 
 export function deactivate() {}
