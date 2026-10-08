@@ -17,11 +17,16 @@ npm run compile   # build once
 npm run watch     # rebuild on change
 npm run lint      # ESLint
 npm test          # compile, lint, then run tests in a VS Code instance
+npm run package   # build a .vsix with @vscode/vsce
 ```
 
 To try the extension, open this folder in VS Code and press `F5`. This launches an Extension Development Host; run **365 Copilot Code: Hello World** from the Command Palette.
 
 On Linux without a display, run tests with `xvfb-run -a npm test`.
+
+## Installing a build
+
+Every CI run uploads the packaged extension as the `365-copilot-code-vsix` artifact. Download it from the run's summary page on the Actions tab, unzip it, then install the `.vsix` with **Extensions: Install from VSIX...** in VS Code or `code --install-extension <file>.vsix`.
 
 ## Project layout
 
