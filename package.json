@@ -16,6 +16,10 @@
     "AI",
     "Programming Languages"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -52,7 +56,7 @@
         "365CopilotCode.auth.clientId": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Application (client) ID of your own Microsoft Entra app registration. Leave empty to use VS Code's built-in Microsoft sign-in. Your tenant may require its own app registration with admin consent for the Microsoft 365 Copilot Chat API permissions.",
+          "markdownDescription": "Application (client) ID of your organization's Microsoft Entra app registration for this extension. Required to sign in. The registration needs a **Mobile and desktop applications** platform with the redirect URI `http://localhost` and admin consent for the Microsoft 365 Copilot Chat API permissions.",
           "scope": "application"
         },
         "365CopilotCode.auth.tenantId": {
@@ -128,6 +132,7 @@
     "typescript-eslint": "^8.46.0"
   },
   "dependencies": {
+    "@azure/msal-node": "7.0.0",
     "ignore": "7.0.5"
   }
 }
