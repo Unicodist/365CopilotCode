@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check tag matches package.json version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${version}. Bump the version and tag v${version}."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: xvfb-run -a npm test
+      - name: Package extension
+        run: npm run package -- --out "365-copilot-code-${GITHUB_REF_NAME}.vsix"
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=""
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then prerelease="--prerelease"; fi
+          gh release create "${GITHUB_REF_NAME}" "365-copilot-code-${GITHUB_REF_NAME}.vsix" \
+            --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag $prerelease
