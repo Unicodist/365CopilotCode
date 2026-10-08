@@ -1,0 +1,49 @@
+{
+  "name": "365-copilot-code",
+  "displayName": "365 Copilot Code",
+  "description": "Coding assistance in VS Code powered by Microsoft 365 Copilot.",
+  "version": "0.0.1",
+  "publisher": "unicodist",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Unicodist/365CopilotCode.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "365CopilotCode.helloWorld",
+        "title": "Hello World",
+        "category": "365 Copilot Code"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.20.5",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0"
+  }
+}
