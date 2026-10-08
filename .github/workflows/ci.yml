@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,3 +19,10 @@ jobs:
       - run: npm run compile
       - run: npm run lint
       - run: xvfb-run -a npm test
+      - name: Package extension
+        run: npm run package -- --out "365-copilot-code-${GITHUB_SHA::7}.vsix"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 365-copilot-code-vsix
+          path: "*.vsix"
+          if-no-files-found: error
