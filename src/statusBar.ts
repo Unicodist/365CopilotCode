@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { AuthManager } from "./auth";
+import { AuthManager, type SignedInAccount } from "./auth";
 
 /** Shows the Microsoft 365 sign-in state and opens sign-in or sign-out when clicked. */
 export class AuthStatusBar implements vscode.Disposable {
@@ -9,15 +9,15 @@ export class AuthStatusBar implements vscode.Disposable {
   constructor(auth: AuthManager) {
     this.item = vscode.window.createStatusBarItem("365CopilotCode.auth", vscode.StatusBarAlignment.Right, 100);
     this.item.name = "365 Copilot Code Account";
-    this.subscription = auth.onDidChangeSession((session) => this.render(session));
-    this.render(auth.currentSession);
+    this.subscription = auth.onDidChangeAccount((account) => this.render(account));
+    this.render(auth.currentAccount);
     this.item.show();
   }
 
-  private render(session: vscode.AuthenticationSession | undefined) {
-    if (session) {
-      this.item.text = `$(copilot) ${session.account.label}`;
-      this.item.tooltip = `Signed in to Microsoft 365 Copilot as ${session.account.label}. Click to sign out.`;
+  private render(account: SignedInAccount | undefined) {
+    if (account) {
+      this.item.text = `$(copilot) ${account.label}`;
+      this.item.tooltip = `Signed in to Microsoft 365 Copilot as ${account.label}. Click to sign out.`;
       this.item.command = "365CopilotCode.signOut";
     } else {
       this.item.text = "$(sign-in) M365 Copilot: Sign in";
