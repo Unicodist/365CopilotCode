@@ -2,10 +2,14 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: ["release/**"]
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -16,23 +20,32 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Check tag matches package.json version
+      - name: Read version
+        id: version
         run: |
           version=$(node -p "require('./package.json').version")
-          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${version}. Bump the version and tag v${version}."
-            exit 1
-          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run lint
       - run: xvfb-run -a npm test
       - name: Package extension
-        run: npm run package -- --out "365-copilot-code-${GITHUB_REF_NAME}.vsix"
-      - name: Create GitHub release
+        run: npm run package -- --out "365-copilot-code-${{ steps.version.outputs.tag }}.vsix"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 365-copilot-code-vsix
+          path: "*.vsix"
+          if-no-files-found: error
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            echo "::warning::Release ${TAG} already exists, so nothing was published. Bump version in package.json on this branch to publish a new release."
+            exit 0
+          fi
           prerelease=""
-          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then prerelease="--prerelease"; fi
-          gh release create "${GITHUB_REF_NAME}" "365-copilot-code-${GITHUB_REF_NAME}.vsix" \
-            --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag $prerelease
+          if [[ "${TAG}" == *-* ]]; then prerelease="--prerelease"; fi
+          gh release create "${TAG}" "365-copilot-code-${TAG}.vsix" \
+            --target "${GITHUB_SHA}" --title "${TAG}" --generate-notes $prerelease
