@@ -4,6 +4,33 @@ A VS Code extension that connects to Microsoft 365 Copilot to help with coding t
 
 > Status: early. Signing in to Microsoft 365 is implemented; chat with Copilot is not yet.
 
+## Getting started
+
+1. **Check you can use it.** You need VS Code 1.95 or later and a Microsoft 365 work or school account with a Microsoft 365 Copilot license. Personal Microsoft accounts are not supported.
+2. **Install the extension.** It is not on the Marketplace yet, so install a CI build:
+   - Open the [Actions tab](https://github.com/Unicodist/365CopilotCode/actions/workflows/ci.yml), pick the latest green run on `main`, and download the `365-copilot-code-vsix` artifact from the run's summary page.
+   - Unzip it to get the `.vsix` file.
+   - In VS Code, run **Extensions: Install from VSIX...** from the Command Palette and pick the file, or run `code --install-extension 365-copilot-code-<sha>.vsix`.
+3. **Sign in.** Click **M365 Copilot: Sign in** in the status bar, or run **365 Copilot Code: Sign In to Microsoft 365 Copilot**, and choose your work account in the browser window that opens. The status bar then shows your account.
+4. **If sign-in is blocked by your organization** (a consent or "app not approved" error), ask your tenant admin to register an app for the extension, then set `365CopilotCode.auth.clientId` and `365CopilotCode.auth.tenantId` in Settings. See [Signing in](#signing-in) for what the admin needs to set up.
+5. **Chat with Copilot about your code.** Coming soon: asking Copilot questions with your open file and workspace as context is being built and is not in the extension yet.
+
+To stop using your account, click the account in the status bar or run **365 Copilot Code: Sign Out of Microsoft 365 Copilot**.
+
+### Settings
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `365CopilotCode.auth.clientId` | empty | Application (client) ID of your own Microsoft Entra app registration. Leave empty to use VS Code's built-in Microsoft sign-in. |
+| `365CopilotCode.auth.tenantId` | empty | Tenant ID or domain, such as `contoso.onmicrosoft.com`. Leave empty to sign in with any work or school account. |
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| **365 Copilot Code: Sign In to Microsoft 365 Copilot** | Signs in with your Microsoft 365 account. |
+| **365 Copilot Code: Sign Out of Microsoft 365 Copilot** | Stops the extension using your account. |
+
 ## Signing in
 
 The extension signs in with VS Code's built-in Microsoft account provider and requests the delegated Microsoft Graph permissions the [Microsoft 365 Copilot Chat API](https://learn.microsoft.com/microsoft-365/copilot/extensibility/api/ai-services/chat/copilotroot-post-conversations) needs: `Sites.Read.All`, `Mail.Read`, `People.Read.All`, `OnlineMeetingTranscript.Read.All`, `Chat.Read`, `ChannelMessage.Read.All` and `ExternalItem.Read.All`. You need a work or school account with a Microsoft 365 Copilot license; personal Microsoft accounts are not supported by the API.
