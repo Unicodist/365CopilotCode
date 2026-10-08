@@ -293,7 +293,11 @@ class WorkspaceFiles {
   constructor(private readonly settings: ContextSettings) {}
 
   label(uri: vscode.Uri): string {
-    return uri.scheme === "untitled" ? uri.path : vscode.workspace.asRelativePath(uri, true);
+    if (uri.scheme === "untitled") {
+      return uri.path;
+    }
+    // Only prefix the folder name when there is more than one folder to tell apart.
+    return vscode.workspace.asRelativePath(uri, (vscode.workspace.workspaceFolders?.length ?? 0) > 1);
   }
 
   async isExcluded(uri: vscode.Uri): Promise<boolean> {
