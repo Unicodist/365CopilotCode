@@ -94,7 +94,9 @@ To get a build of a branch or pull request instead, use its CI run. Every CI run
 
 ## Releasing
 
-Bump `version` in `package.json` (for example with `npm version patch`), push the commit, then push a matching tag such as `v0.0.2`. The Release workflow checks that the tag matches the version, runs the tests, packages the extension and creates a GitHub release with the `.vsix` attached. Tags with a suffix, such as `v0.1.0-beta.1`, are published as pre-releases.
+Create a branch named `release/<something>` from `main` (for example `release/0.1`), set `version` in `package.json` to the version you want to ship, and push the branch. The Release workflow runs the tests, packages the extension and creates a GitHub release tagged `v<version>` with the `.vsix` attached. Versions with a suffix, such as `0.1.0-beta.1`, are published as pre-releases.
+
+Every push to a release branch builds the `.vsix` and uploads it as a workflow artifact. A new release is published only when the version in `package.json` hasn't been released yet, so bump the version on the branch to ship a fix.
 
 ## Project layout
 
