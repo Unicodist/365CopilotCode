@@ -11,8 +11,8 @@ A VS Code extension that connects to Microsoft 365 Copilot to help with coding t
    - Open the [Actions tab](https://github.com/Unicodist/365CopilotCode/actions/workflows/ci.yml), pick the latest green run on `main`, and download the `365-copilot-code-vsix` artifact from the run's summary page.
    - Unzip it to get the `.vsix` file.
    - In VS Code, run **Extensions: Install from VSIX...** from the Command Palette and pick the file, or run `code --install-extension 365-copilot-code-<sha>.vsix`.
-3. **Sign in.** Click **M365 Copilot: Sign in** in the status bar, or run **365 Copilot Code: Sign In to Microsoft 365 Copilot**, and choose your work account in the browser window that opens. The status bar then shows your account.
-4. **If sign-in is blocked by your organization** (a consent or "app not approved" error), ask your tenant admin to register an app for the extension, then set `365CopilotCode.auth.clientId` and `365CopilotCode.auth.tenantId` in Settings. See [Signing in](#signing-in) for what the admin needs to set up.
+3. **Set up the app registration.** The extension signs in with your organization's own Microsoft Entra app registration. Ask your tenant admin to create one as described in [Signing in](#signing-in), then set `365CopilotCode.auth.clientId` (and `365CopilotCode.auth.tenantId`) in Settings.
+4. **Sign in.** Click **M365 Copilot: Sign in** in the status bar, or run **365 Copilot Code: Sign In to Microsoft 365 Copilot**. Your default browser opens; sign in with your work account there, then come back to VS Code. The status bar then shows your account.
 5. **Ask Copilot about your code.** Either:
    - In the Chat view, type `@m365` followed by your question, for example `@m365 why does this function return undefined?`. Attach more files with `#file` or by dragging them into the chat. Follow-up questions in the same chat continue the same Copilot conversation.
    - Or run **365 Copilot Code: Ask Microsoft 365 Copilot...** from the Command Palette or the editor's right-click menu. The answer opens in a panel beside your code, with the list of files that were sent.
@@ -25,7 +25,7 @@ To stop using your account, click the account in the status bar or run **365 Cop
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `365CopilotCode.auth.clientId` | empty | Application (client) ID of your own Microsoft Entra app registration. Leave empty to use VS Code's built-in Microsoft sign-in. |
+| `365CopilotCode.auth.clientId` | empty | Application (client) ID of your organization's Microsoft Entra app registration. Required to sign in. |
 | `365CopilotCode.auth.tenantId` | empty | Tenant ID or domain, such as `contoso.onmicrosoft.com`. Leave empty to sign in with any work or school account. |
 | `365CopilotCode.context.maxCharacters` | `40000` | Most characters of file content sent with one question. |
 | `365CopilotCode.context.includeWorkspaceFiles` | `true` | Also send open tabs and workspace files related to the question. Turn off to send only the active file, selection and attached files. |
@@ -36,8 +36,8 @@ To stop using your account, click the account in the status bar or run **365 Cop
 
 | Command | What it does |
 | --- | --- |
-| **365 Copilot Code: Sign In to Microsoft 365 Copilot** | Signs in with your Microsoft 365 account. |
-| **365 Copilot Code: Sign Out of Microsoft 365 Copilot** | Stops the extension using your account. |
+| **365 Copilot Code: Sign In to Microsoft 365 Copilot** | Opens your browser to sign in with your Microsoft 365 account. |
+| **365 Copilot Code: Sign Out of Microsoft 365 Copilot** | Signs out and deletes the extension's saved tokens. |
 | **365 Copilot Code: Ask Microsoft 365 Copilot...** | Asks Copilot a question with your active file and related workspace files as context. |
 
 ### What gets sent to Copilot
@@ -54,17 +54,22 @@ Steps 4 and 5 add at most `365CopilotCode.context.maxWorkspaceFiles` files. File
 
 ## Signing in
 
-The extension signs in with VS Code's built-in Microsoft account provider and requests the delegated Microsoft Graph permissions the [Microsoft 365 Copilot Chat API](https://learn.microsoft.com/microsoft-365/copilot/extensibility/api/ai-services/chat/copilotroot-post-conversations) needs: `Sites.Read.All`, `Mail.Read`, `People.Read.All`, `OnlineMeetingTranscript.Read.All`, `Chat.Read`, `ChannelMessage.Read.All` and `ExternalItem.Read.All`. You need a work or school account with a Microsoft 365 Copilot license; personal Microsoft accounts are not supported by the API.
+Sign-in opens your default browser (the OAuth authorization code flow with PKCE, redirecting back to `http://localhost` on a random port). It does not use VS Code's Accounts menu or the Windows and macOS account broker, so it works the same everywhere. Tokens are kept in VS Code's secret storage and refreshed silently; you only see the browser again when Microsoft asks you to sign in again.
 
-- Click **M365 Copilot: Sign in** in the status bar, or run **365 Copilot Code: Sign In to Microsoft 365 Copilot**.
-- Once signed in, the status bar shows your account. Click it, or run **Sign Out of Microsoft 365 Copilot**, to stop the extension using that account. The account stays signed in to VS Code until you remove it from the Accounts menu.
+You need a work or school account with a Microsoft 365 Copilot license; personal Microsoft accounts are not supported by the API.
 
-Several of these permissions need admin consent. If sign-in fails with a consent or "app not approved" error, ask your tenant admin to register an app for the extension and set:
+### App registration (for your tenant admin)
 
-- `365CopilotCode.auth.clientId`: the app registration's Application (client) ID.
-- `365CopilotCode.auth.tenantId`: your tenant ID or domain, such as `contoso.onmicrosoft.com`.
+The extension needs its own Microsoft Entra app registration in your tenant:
 
-The app registration needs a **Mobile and desktop applications** platform with the redirect URIs `http://localhost` and `https://vscode.dev/redirect`, the delegated Graph permissions above, and admin consent granted.
+1. In the Entra admin center, go to **App registrations > New registration**. Pick "Accounts in this organizational directory only".
+2. Under **Authentication**, add a **Mobile and desktop applications** platform with the redirect URI `http://localhost`.
+3. Under **API permissions**, add these delegated Microsoft Graph permissions, which the [Microsoft 365 Copilot Chat API](https://learn.microsoft.com/microsoft-365/copilot/extensibility/api/ai-services/chat/copilotroot-post-conversations) requires: `Sites.Read.All`, `Mail.Read`, `People.Read.All`, `OnlineMeetingTranscript.Read.All`, `Chat.Read`, `ChannelMessage.Read.All` and `ExternalItem.Read.All`. Then **Grant admin consent**.
+4. Copy the **Application (client) ID** into `365CopilotCode.auth.clientId` and the **Directory (tenant) ID** into `365CopilotCode.auth.tenantId`.
+
+Once signed in, the status bar shows your account. Click it, or run **Sign Out of Microsoft 365 Copilot**, to sign out; this deletes the extension's saved tokens.
+
+In a remote window (SSH, WSL, containers) the extension runs on your local machine so the browser can reach the sign-in redirect.
 
 ## Requirements
 
@@ -82,7 +87,7 @@ npm test          # compile, lint, then run tests in a VS Code instance
 npm run package   # build a .vsix with @vscode/vsce
 ```
 
-To try the extension, open this folder in VS Code and press `F5`. This launches an Extension Development Host; run **365 Copilot Code: Hello World** from the Command Palette.
+To try the extension, open this folder in VS Code and press `F5`. This launches an Extension Development Host; run **365 Copilot Code: Sign In to Microsoft 365 Copilot** from the Command Palette.
 
 On Linux without a display, run tests with `xvfb-run -a npm test`.
 

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { AuthManager } from "./auth";
+import { AuthManager, showSignInError } from "./auth";
 import { registerAskCommand, registerChatParticipant } from "./chat";
 import { CopilotClient } from "./copilot";
 import { AuthStatusBar } from "./statusBar";
@@ -12,7 +12,7 @@ export interface ExtensionApi {
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<ExtensionApi> {
-  const auth = new AuthManager(context.globalState);
+  const auth = new AuthManager(context.globalState, context.secrets);
   const statusBar = new AuthStatusBar(auth);
 
   const helloWorld = vscode.commands.registerCommand("365CopilotCode.helloWorld", () => {
@@ -21,27 +21,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 
   const signIn = vscode.commands.registerCommand("365CopilotCode.signIn", async () => {
     try {
-      const session = await auth.signIn();
-      vscode.window.showInformationMessage(`Signed in to Microsoft 365 Copilot as ${session.account.label}.`);
+      const account = await auth.signIn();
+      vscode.window.showInformationMessage(`Signed in to Microsoft 365 Copilot as ${account.label}.`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      vscode.window.showErrorMessage(`Microsoft 365 sign-in failed: ${message}`);
+      await showSignInError(err);
     }
   });
 
   const signOut = vscode.commands.registerCommand("365CopilotCode.signOut", async () => {
-    const label = auth.currentSession?.account.label;
     await auth.signOut();
-    const manage = "Manage Accounts";
-    const choice = await vscode.window.showInformationMessage(
-      label
-        ? `Signed out of Microsoft 365 Copilot. ${label} stays signed in to VS Code; remove it from the Accounts menu to sign out everywhere.`
-        : "Signed out of Microsoft 365 Copilot.",
-      manage,
-    );
-    if (choice === manage) {
-      await vscode.commands.executeCommand("workbench.action.accounts");
-    }
+    vscode.window.showInformationMessage("Signed out of Microsoft 365 Copilot.");
   });
 
   const copilot = new CopilotClient(() => auth.getAccessToken());
@@ -58,3 +47,4 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extens
 }
 
 export function deactivate() {}
+

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { MissingClientIdError, showSignInError } from "./auth";
 import { CopilotClient, type CopilotContext } from "./copilot";
 import { describeReason, formatContextFile, gatherContext, packContext, readContextSettings, type ContextFile, type PackedContext } from "./context";
 
@@ -125,6 +126,10 @@ export function registerAskCommand(client: CopilotClient): vscode.Disposable {
       await showAnswer(question, `${reply.reply}\n\n---\n\n**Context sent:**\n\n${sources.join("\n") || "- none"}\n`);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
+      if (err instanceof vscode.CancellationError || err instanceof MissingClientIdError) {
+        await showSignInError(err);
         return;
       }
       vscode.window.showErrorMessage(err instanceof Error ? err.message : String(err));

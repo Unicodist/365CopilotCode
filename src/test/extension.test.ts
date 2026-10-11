@@ -19,7 +19,7 @@ suite("Extension", () => {
     assert.ok(extension);
     const api = await extension.activate();
 
-    assert.strictEqual(api.auth.currentSession, undefined);
+    assert.strictEqual(api.auth.currentAccount, undefined);
     assert.strictEqual(api.statusBar.item.command, "365CopilotCode.signIn");
     assert.match(api.statusBar.item.text, /Sign in/);
   });
